@@ -54,6 +54,14 @@ $(document).ready(function () {
       }
     });
   })
+
+  $.getJSON("/api/forge/clientid", function (res) {
+    $("#ClientID").val(res.id);
+    $("#provisionAccountSave").click(function () {
+      $('#provisionAccountModal').modal('toggle');
+      $('#userHubs').jstree(true).refresh();
+    });
+  });
 });
 
 function prepareUserHubsTree() {

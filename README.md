@@ -24,7 +24,7 @@ This sample is based on the [Learn Forge](http://learnforge.autodesk.io) tutoria
 
 # Thumbnail
 
-![](/thumbnail.gif)
+![thumbnail](/thumbnail.gif)
 
 # Setup
 

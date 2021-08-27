@@ -16,7 +16,8 @@
 // UNINTERRUPTED OR ERROR FREE.
 /////////////////////////////////////////////////////////////////////
 
-// Based on the extesion library:
+// Based on the extesion library
+// this extensions requires connection to a database
 // https://github.com/Autodesk-Forge/forge-extensions/tree/master/public/extensions/CustomPropertiesExtension
 
 // *******************************************
@@ -87,8 +88,9 @@ class CustomPropertyPanelExtension extends Autodesk.Viewing.Extension {
       });
     });
 
-    this.viewer.addEventListener(Autodesk.Viewing.EXTENSION_LOADED_EVENT, (e) => {
+    this.viewer.addEventListener(Autodesk.Viewing.EXTENSION_LOADED_EVENT, async (e) => {
       if (e.extensionId !== 'Autodesk.PropertiesManager') return;
+      this._panel = new CustomPropertyPanel(this.viewer, this.options);
       var ext = await this.viewer.getExtension('Autodesk.PropertiesManager');
       ext.setPanel(this._panel);
     })

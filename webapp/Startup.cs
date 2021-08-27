@@ -41,8 +41,8 @@ namespace forgeSample
       {
         app.UseDeveloperExceptionPage();
         // clean up on every run... :) 
-        Controllers.ExtractStyles da4c3d = new Controllers.ExtractStyles();
-        da4c3d.ClearAccount();
+        //Controllers.ExtractStyles da4c3d = new Controllers.ExtractStyles();
+        //da4c3d.ClearAccount();
       }
 
       app.UseRouting();

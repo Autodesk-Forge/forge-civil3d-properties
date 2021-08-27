@@ -71,16 +71,18 @@ namespace forgeSample.Controllers
 
         new System.Threading.Tasks.Task(async () =>
           {
-            JObject bodyJson = JObject.Parse((string)body.ToString());
-            await _hubContext.Clients.Client(connectionId).SendAsync("onCompleteProps", bodyJson.ToString());
+            try {
+              JObject bodyJson = JObject.Parse((string)body.ToString());
+              await _hubContext.Clients.Client(connectionId).SendAsync("onCompleteProps", bodyJson.ToString());
 
-            if (!bodyJson.GetValue("status").ToString().Equals("success")) return;
+              if (!bodyJson.GetValue("status").ToString().Equals("success")) return;
 
-            ObjectsApi objects = new ObjectsApi();
-            objects.Configuration.AccessToken = (await Credentials.Get2LeggedTokenAsync(new Scope[] { Scope.DataWrite, Scope.DataRead })).access_token;
-            dynamic signedUrl = await objects.CreateSignedResourceAsyncWithHttpInfo(Utils.BucketName, fileName, new PostBucketsSigned(10), "read");
-            await _hubContext.Clients.Client(connectionId).SendAsync("propsReady", (string)(signedUrl.Data.signedUrl));
-
+              ObjectsApi objects = new ObjectsApi();
+              objects.Configuration.AccessToken = (await Credentials.Get2LeggedTokenAsync(new Scope[] { Scope.DataWrite, Scope.DataRead })).access_token;
+              dynamic signedUrl = await objects.CreateSignedResourceAsyncWithHttpInfo(Utils.BucketName, fileName, new PostBucketsSigned(10), "read");
+              await _hubContext.Clients.Client(connectionId).SendAsync("propsReady", (string)(signedUrl.Data.signedUrl));
+            }
+            catch(Exception ex){Console.WriteLine(ex.Message);}
           }).Start();
       }
       catch { }

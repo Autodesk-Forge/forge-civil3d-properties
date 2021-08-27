@@ -6,8 +6,8 @@ class CustomPropertyPanel extends Autodesk.Viewing.Extensions.ViewerPropertyPane
     super(viewer, options);
     this._data = null;
   }
-  setProperties(properties, options) {
-    Autodesk.Viewing.Extensions.ViewerPropertyPanel.prototype.setProperties.call(this, properties, options);
+  setAggregatedProperties(properties, options) {
+    Autodesk.Viewing.Extensions.ViewerPropertyPanel.prototype.setAggregatedProperties.call(this, properties, options);
 
     if (this._data != null) {
       this.viewer.getProperties(this.propertyNodeId, (props) => {
@@ -36,10 +36,7 @@ class CustomPropertyPanel extends Autodesk.Viewing.Extensions.ViewerPropertyPane
 class CustomPropertyPanelExtension extends Autodesk.Viewing.Extension {
   constructor(viewer, options) {
     super(viewer, options);
-    //window._connection = null;
-    //window._connectionId = null;
     this._panel = null;
-    this._data = null;
   }
 
   load() {
@@ -82,13 +79,14 @@ class CustomPropertyPanelExtension extends Autodesk.Viewing.Extension {
   }
 
   startConnection(onReady) {
-    if (window._connection != undefined && window._connection.connectionState) { this.defineHandles(); if (onReady) onReady(); return; }
+    if (window._connection != undefined && window._connection.connectionState) { if (onReady) onReady(); return; }
     window._connection = new signalR.HubConnectionBuilder().withUrl("/api/signalr/designautomation").build();
     window._connection.start()
       .then(() => {
         window._connection.invoke('getConnectionId')
           .then((id) => {
             window._connectionId = id; // we'll need this...
+            this.defineHandles();
             if (onReady) onReady();
           });
       });
@@ -99,7 +97,7 @@ class CustomPropertyPanelExtension extends Autodesk.Viewing.Extension {
       jQuery.get({
         url: url,
         success: (res) => {
-          this._panel._data = JSON.parse(res);
+          viewer.getExtension('Autodesk.PropertiesManager').getPanel()._data = JSON.parse(res);
           $.notify("Style information ready to use.", "success");
         },
         error: (err) => {

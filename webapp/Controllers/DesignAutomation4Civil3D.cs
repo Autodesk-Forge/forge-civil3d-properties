@@ -140,7 +140,7 @@ namespace forgeSample.Controllers
 
       if (!existActivity)
       {
-        string commandLine = string.Format(@"$(engine.path)\\accoreconsole.exe /i $(args[inputFile].path) /al $(appbundles[{0}].path) /s $(settings[script].path)", AppName);
+        string commandLine = string.Format("$(engine.path)\\accoreconsole.exe /i \"$(args[inputFile].path)\" /al \"$(appbundles[{0}].path)\" /s \"$(settings[script].path)\"", AppName);
         Activity activitySpec = new Activity()
         {
           Id = ActivityName,
@@ -240,8 +240,6 @@ namespace forgeSample.Controllers
 
     public async Task StartExtractStyles(Credentials credentials, string projectId, string versionId, string connectionId, string contentRootPath)
     {
-      // uncomment these lines to clear all appbundles & activities under your account
-
       await EnsureAppBundle(contentRootPath);
       await EnsureActivity();
 

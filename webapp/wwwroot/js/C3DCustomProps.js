@@ -1,3 +1,24 @@
+/////////////////////////////////////////////////////////////////////
+// Copyright (c) Autodesk, Inc. All rights reserved
+// Written by Forge Partner Development
+//
+// Permission to use, copy, modify, and distribute this software in
+// object code form for any purpose and without fee is hereby granted,
+// provided that the above copyright notice appears in all copies and
+// that both that copyright notice and the limited warranty and
+// restricted rights notice below appear in all supporting
+// documentation.
+//
+// AUTODESK PROVIDES THIS PROGRAM "AS IS" AND WITH ALL FAULTS.
+// AUTODESK SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTY OF
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR USE.  AUTODESK, INC.
+// DOES NOT WARRANT THAT THE OPERATION OF THE PROGRAM WILL BE
+// UNINTERRUPTED OR ERROR FREE.
+/////////////////////////////////////////////////////////////////////
+
+// Based on the extesion library:
+// https://github.com/Autodesk-Forge/forge-extensions/tree/master/public/extensions/CustomPropertiesExtension
+
 // *******************************************
 // Custom Property Panel
 // *******************************************
@@ -39,7 +60,7 @@ class CustomPropertyPanelExtension extends Autodesk.Viewing.Extension {
     this._panel = null;
   }
 
-  load() {
+  async load() {
     this.startConnection(() => {
       var params = this.options.itemId.split('/');
       this.options.projectId = params[params.length - 3];
@@ -49,8 +70,16 @@ class CustomPropertyPanelExtension extends Autodesk.Viewing.Extension {
         url: '/api/styles',
         contentType: 'application/json',
         data: JSON.stringify({ 'connectionId': window._connectionId, 'activity': 'extractStyles', 'itemId': this.options.itemId, 'versionId': this.options.versionId }),
-        success: function (res) {
-          $.notify("Design Automation Workitem started... please wait.", "info");
+        success: function (res, status) {
+          switch (status) {
+            case "nocontent":
+              // the information will be sent via websocket
+              $.notify("File already processed, using cached version.", "info");
+              break;
+            case "success":
+              $.notify("Design Automation Workitem started... please wait.", "info");
+              break;
+          }
         },
         error: function (err) {
           $.notify("Fail to trigger Design Automation to extract style information", "error");
@@ -58,24 +87,21 @@ class CustomPropertyPanelExtension extends Autodesk.Viewing.Extension {
       });
     });
 
+    this.viewer.addEventListener(Autodesk.Viewing.EXTENSION_LOADED_EVENT, (e) => {
+      if (e.extensionId !== 'Autodesk.PropertiesManager') return;
+      var ext = await this.viewer.getExtension('Autodesk.PropertiesManager');
+      ext.setPanel(this._panel);
+    })
+
     return true;
   }
 
-  unload() {
+  async unload() {
     if (this._panel == null) return;
-    var ext = this.viewer.getExtension('Autodesk.PropertiesManager');
+    var ext = await this.viewer.getExtension('Autodesk.PropertiesManager');
     this._panel = null;
     ext.setDefaultPanel();
     return true;
-  }
-
-  onToolbarCreated() {
-    this._panel = new CustomPropertyPanel(this.viewer, this.options);
-    this.viewer.addEventListener(Autodesk.Viewing.EXTENSION_LOADED_EVENT, (e) => {
-      if (e.extensionId !== 'Autodesk.PropertiesManager') return;
-      var ext = this.viewer.getExtension('Autodesk.PropertiesManager');
-      ext.setPanel(this._panel);
-    })
   }
 
   startConnection(onReady) {
